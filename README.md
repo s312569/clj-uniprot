@@ -4,6 +4,18 @@ A parser for Uniprot sequences in XML format.
 
 ## Usage
 
+Import from Clojars:
+
+```clojure
+[clj-uniprot "0.1.0"]
+```
+
+Use in your namespace:
+
+```clojure
+(:require [clj-uniprot :as up])
+```
+
 Open a reader on a file containing Uniprot sequences in XML format and
 call 'uniprot-seq'. This will return a lazy list of zippers, one for
 each sequence in the file, that can be used with the usual Clojure XML
