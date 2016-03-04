@@ -2,7 +2,7 @@
   (:require [clojure.data.xml :refer [parse]]
             [clojure.zip :refer [xml-zip]]
             [clojure.data.zip.xml :refer [xml-> xml1-> text attr=]]
-            [clojure.string :refer [trim replace split]]
+            [clojure.string :as st]
             [fs.core :refer [temp-file delete]]
             [clj-http.client :as client]))
 
@@ -40,7 +40,7 @@
   Uniprot sequence."
   [up]
   (-> (xml1-> up :sequence text)
-      (replace #" " "")))
+      (st/replace #" " "")))
 
 (defn description
   "Takes a zipper and returns a description of a Uniprot
@@ -102,7 +102,7 @@
                              {:client-params {"http.useragent"
                                               (str "clj-http " email)}})
                       (:body)
-                      (split #"\n")))]
+                      (st/split #"\n")))]
      (cond (< (count r) 1000) r
            (not (seq r)) nil
            :else
