@@ -7,13 +7,13 @@ A parser for Uniprot sequences in XML format.
 Import from Clojars:
 
 ```clojure
-[clj-uniprot "0.1.1"]
+[clj-uniprot "0.1.2"]
 ```
 
 Use in your namespace:
 
 ```clojure
-(:require [clj-uniprot :as up])
+(:require [clj-uniprot.core :as up])
 ```
 
 Open a reader on a file containing Uniprot sequences in XML format and

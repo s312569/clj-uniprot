@@ -68,8 +68,7 @@
   [up]
   (str ">" (accession up) " " (description up) \newline
        (doall (->> (partition-all 70 (biosequence up))
-                   (map #(apply str %))
-                   (interpose \newline)
+                   (map #(str (apply str %) \newline))
                    (apply str)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
