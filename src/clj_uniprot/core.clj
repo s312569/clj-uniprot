@@ -1,7 +1,10 @@
 (ns clj-uniprot.core
   (:require [clojure.data.xml :refer [parse]]
+            [clj-time.core :as t]
+            [clojure.java.io :refer [reader input-stream]]
+            [clj-time.format :as f]
             [clojure.zip :refer [xml-zip]]
-            [clojure.data.zip.xml :refer [xml-> xml1-> text attr=]]
+            [clojure.data.zip.xml :refer [xml-> xml1-> text attr= attr]]
             [clojure.string :as st]
             [fs.core :refer [temp-file delete]]
             [clj-http.client :as client]))
@@ -17,6 +20,31 @@
 ;; some accessors
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn- format-date
+  [s]
+  (let [fo (f/formatter "yyyy-MM-dd")]
+    (f/parse fo s)))
+
+(defn dataset
+  [up]
+  "Returns the dataset the protein belongs to, e.g. Swiss-Prot."
+  (xml1-> up (attr :dataset)))
+
+(defn created
+  [up]
+  "Returns the creation date. Returns a joda time object."
+  (format-date (xml1-> up (attr :created))))
+
+(defn modified
+  [up]
+  "Returns the modification date. Returns a joda time object."
+  (format-date (xml1-> up (attr :modified))))
+
+(defn version
+  [up]
+  "Returns the version."
+  (xml1-> up (attr :version)))
+
 (defn tax-name
   "Takes a zipper and returns the scientific name of an organism
   associated with a Uniprot sequence."
@@ -27,13 +55,15 @@
   "Takes a zipper and returns a list of accessions associated with a
   Uniprot sequence."
   [up]
-  (xml-> up :accession text))
+  (if up
+    (xml-> up :accession text)))
 
 (defn accession
   "Takes a zipper and returns the first accession associated with a
   Uniprot sequence."
   [up]
-  (first (accessions up)))
+  (if (seq up)
+    (first (accessions up))))
 
 (defn biosequence
   "Takes a zipper and returns the protein sequence associated with a
@@ -115,7 +145,9 @@
                 (cond
                  (nil? (get (:headers r) "retry-after"))
                  (cond (= (:status r) 200)
-                       r
+                       (if (= (get (:headers r) "Content-Type") "application/xml")
+                         r
+                         (throw (Exception. (str "No responses for query."))))
                        (= (:status r) 302)
                        (recur (get (:headers r) "Location") 0)
                        :else
@@ -135,12 +167,14 @@
 (defn get-uniprot-sequences
   "Takes a list of accessions and returns a stream from Uniprot
   containing the sequences in XML format. Can then be used with
-  'uniprot-seq'."
+  'with-open' and then 'uniprot-seq'. Throws an exception if no
+  sequences returned."
   [email accessions]
   (if (empty? accessions)
     nil
     (let [f (let [file (temp-file "up-seq-")]
-              (->> (interpose \newline accessions)
+              (->> (map #(first (st/split % #"-")) accessions)
+                   (interpose \newline)
                    (apply str)
                    (spit file))
               file)]
@@ -151,6 +185,6 @@
                                                    (str "clj-http " email)}
                                    :multipart [{:name "file" :content f}
                                                {:name "format" :content "xml"}]
-           :follow-redirects false}
-          f))
+                                   :follow-redirects false}
+                                  f))
         (finally (delete f))))))

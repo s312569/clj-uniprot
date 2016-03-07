@@ -7,7 +7,7 @@ A parser for Uniprot sequences in XML format.
 Import from Clojars:
 
 ```clojure
-[clj-uniprot "0.1.2"]
+[clj-uniprot "0.1.3"]
 ```
 
 Use in your namespace:
@@ -37,7 +37,16 @@ string. Others will be added as I need them.
 Uniprot can be searched remotely using 'uniprot-search' which returns
 a list of accessions matching your search. Sequences can be fetched
 from Uniprot using 'get-uniprot-sequence'. This returns a buffered
-reader that can be directly used by 'uniprot-seq'.
+reader that can be directly used with 'with-open' and 'uniprot-seq'.
+
+```clojure
+clj-uniprot.core> (with-open [r (get-uniprot-sequences "jason.mulvenna@gmail.com"
+                                                       '("P68371"))]
+                    (doall (->> (uniprot-seq r)
+                                (map accession))))
+("P68371")
+clj-uniprot.core>
+```
 
 Sequences can be converted to a fasta string using 'uniprot->fasta'.
 
