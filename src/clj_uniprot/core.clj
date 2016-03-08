@@ -3,7 +3,7 @@
             [clj-time.core :as t]
             [clojure.java.io :refer [reader input-stream]]
             [clj-time.format :as f]
-            [clojure.zip :refer [xml-zip]]
+            [clojure.zip :refer [xml-zip node]]
             [clojure.data.zip.xml :refer [xml-> xml1-> text attr= attr]]
             [clojure.string :as st]
             [fs.core :refer [temp-file delete]]
@@ -88,6 +88,16 @@
                        :innName))
                "Unknown")]
     (str rn " [" (tax-name up) "]")))
+
+(defn db-x-refs
+  [up]
+  "Returns a list of database cross-references. Returns maps
+  with :type, :id and :properties keys."
+  (->> (xml-> up :dbReference)
+       (map #(hash-map :type (xml1-> % (attr :type))
+                       :id (xml1-> % (attr :id))
+                       :properties (->> (xml-> % :property node)
+                                        (map :attrs))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; formats
