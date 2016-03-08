@@ -79,7 +79,7 @@
   description."
   [up]
   (let [rn (or (xml1-> up :protein :recommendedName :fullName text)
-               (some #(xml1-> up :protein % )
+               (some #(xml1-> up :protein % text)
                      '(:alternativeName
                        :submittedName
                        :allergenName
