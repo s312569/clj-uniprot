@@ -1,12 +1,14 @@
 (ns clj-uniprot.core
   (:require [clojure.data.xml :refer [parse]]
             [clj-time.core :as t]
-            [clojure.java.io :refer [reader input-stream]]
             [clj-time.format :as f]
             [clojure.zip :refer [xml-zip node]]
             [clojure.data.zip.xml :refer [xml-> xml1-> text attr= attr]]
             [clojure.string :as st]
+            [biodb.core :as bdb]
+            [taoensso.nippy :refer [freeze thaw]]
             [fs.core :refer [temp-file delete]]
+            [clojure.edn :as edn]
             [clj-http.client :as client]))
 
 (defn uniprot-seq
@@ -198,3 +200,21 @@
                                    :follow-redirects false}
                                   f))
         (finally (delete f))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; integration with biodb
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defmethod bdb/table-spec :uniprot
+  [q]
+  (vector [:accession :text "PRIMARY KEY"]
+          [:src :binary "NOT NULL"]))
+
+(defmethod bdb/prep-sequences :uniprot
+  [q]
+  (->> (:coll q)
+       (map #(hash-map :accession (accession %) :src (freeze (node %))))))
+
+(defmethod bdb/restore-sequence :uniprot
+  [q]
+  (xml-zip (thaw (:src (dissoc q :type)))))

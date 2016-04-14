@@ -7,7 +7,7 @@ A parser for Uniprot sequences in XML format.
 Import from Clojars:
 
 ```clojure
-[clj-uniprot "0.1.5"]
+[clj-uniprot "0.1.6"]
 ```
 
 Use in your namespace:
