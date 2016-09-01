@@ -106,12 +106,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn uniprot->fasta
-  "Converts a Uniprot sequence to a fasta string."
+  "Converts a Uniprot sequence to a fasta hashmap."
   [up]
-  (str ">" (accession up) " " (description up) \newline
-       (doall (->> (partition-all 70 (biosequence up))
-                   (map #(str (apply str %) \newline))
-                   (apply str)))))
+  {:accession (accession up)
+   :description (description up)
+   :sequence (biosequence up)})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; remote
