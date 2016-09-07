@@ -74,6 +74,11 @@
   (-> (xml1-> up :sequence text)
       (st/replace #" " "")))
 
+(defn mass
+  "Takes a zipper and returns the protein mass of a Uniprot sequence."
+  [up]
+  (Float/parseFloat (xml1-> up :sequence (attr :mass))))
+
 (defn description
   "Takes a zipper and returns a description of a Uniprot
   sequence. Includes recommended name and species or, if no
